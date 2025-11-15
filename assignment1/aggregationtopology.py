@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from mininet.topo import Topo
 from mininet.link import TCLink
+from mininet.node import OVSBridge
 
 class AggTopo(Topo):
     def __init__(self, n, k):
@@ -13,7 +14,7 @@ class AggTopo(Topo):
             # Add hosts and a switch
             h1 = self.addHost(f'h{2 * i + 1}')
             h2 = self.addHost(f'h{2 * i + 2}')
-            s1 = self.addSwitch(f's{i+1}')
+            s1 = self.addSwitch(f's{i+1}', stp=True, cls=OVSBridge)
             # Connect hosts to the switch
             self.addLink(h1, s1, cls=TCLink)
             self.addLink(h2, s1, cls=TCLink)
@@ -26,7 +27,7 @@ class AggTopo(Topo):
             
             if len(prev_list) == k:
                 # Create aggregation switch
-                a1 = self.addSwitch(f'a{len(agg_list)+1}')
+                a1 = self.addSwitch(f'a{len(agg_list)+1}', stp=True, cls=OVSBridge)
                 # Connect agg to every switch in prev_switches
                 for s in prev_list:
                     self.addLink(a1, s, bw=25, delay='5ms', cls=TCLink)
@@ -38,7 +39,7 @@ class AggTopo(Topo):
         # Handle case where switches are not divisible by k
         if len(prev_list) > 0:
             # Create aggregation switch
-                a1 = self.addSwitch(f'a{len(agg_list)+1}')
+                a1 = self.addSwitch(f'a{len(agg_list)+1}', stp=True, cls=OVSBridge)
                 # Connect agg to every switch in prev_switches
                 for s in prev_list:
                     self.addLink(a1, s, bw=25, delay='5ms', cls=TCLink)
