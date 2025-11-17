@@ -102,12 +102,7 @@ class ThreePathsController(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(out_port)]
 
         match = parser.OFPMatch(in_port=in_port, eth_type=0x0800, ip_proto=proto)
-        
-        if msg.buffer_id != ofproto.OFP_NO_BUFFER:
-            self.add_flow(datapath, 1, match, actions, msg.buffer_id)
-            return
-        else:
-            self.add_flow(datapath, 1, match, actions)
+        self.add_flow(datapath, 1, match, actions)
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
