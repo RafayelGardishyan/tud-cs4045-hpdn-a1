@@ -90,6 +90,9 @@ class ThreePathsController(app_manager.RyuApp):
 
         out_port = ofproto.OFPP_FLOOD
         match = None
+        if in_port != 1:
+            out_port = 1
+            print("Sending packet to its destination")
         if proto == 6:
             out_port = 2
             match = match_tcp
