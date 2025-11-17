@@ -56,8 +56,22 @@ class ThreePathsController(app_manager.RyuApp):
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
-        ipv4_pkt = pkt.get_protocols(ipv4.ipv4)[0]
-        proto = ipv4_pkt[proto]
+        ipv4_pkt = pkt.get_protocols(ipv4.ipv4)
+
+        if not ipv4_pkt:
+            out_port = ofproto.OFPP_FLOOD
+            actions = [parser.OFPActionOutput(out_port)]
+            data = None
+            if msg.buffer_id == ofproto.OFP_NO_BUFFER:
+                data = msg.data
+            
+            out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
+                                      in_port=in_port, actions=actions, data=data)
+            datapath.send_msg(out)
+            return
+
+        ipv4_header = ipv4_pkt[0] 
+        proto = ipv4_header.proto
 
         if eth.ethertype == ether_types.ETH_TYPE_LLDP:
             # ignore lldp packet
@@ -91,11 +105,12 @@ class ThreePathsController(app_manager.RyuApp):
 
         actions = [parser.OFPActionOutput(out_port)]
 
-        if msg.buffer_id != ofproto.OFP_NO_BUFFER:
-            self.add_flow(datapath, 1, match, actions, msg.buffer_id)
-            return
-        else:
-            self.add_flow(datapath, 1, match, actions)
+        if match:
+            if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+                self.add_flow(datapath, 1, match, actions, msg.buffer_id)
+                return
+            else:
+                self.add_flow(datapath, 1, match, actions)
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
