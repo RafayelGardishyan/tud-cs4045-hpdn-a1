@@ -84,36 +84,30 @@ class ThreePathsController(app_manager.RyuApp):
 
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
-        match_tcp = parser.OFPMatch(eth_type=0x0800, ip_proto=6)
-        match_udp = parser.OFPMatch(eth_type=0x0800, ip_proto=17)
-        match_icmp = parser.OFPMatch(eth_type=0x0800, ip_proto=1)
-
         out_port = ofproto.OFPP_FLOOD
         match = None
         if in_port != 1:
             out_port = 1
             print("Sending packet to its destination")
-        if proto == 6:
+        elif proto == 6:
             out_port = 2
-            match = match_tcp
             print("Sending TCP Packet to port 2")
         elif proto == 17:
             out_port = 3
-            match = match_udp
             print("Sending UDP Packet to port 3")
         elif proto == 1:
             out_port = 4
-            match = match_icmp
             print("Sending ICMP Packet to port 4")
 
         actions = [parser.OFPActionOutput(out_port)]
 
-        if match:
-            if msg.buffer_id != ofproto.OFP_NO_BUFFER:
-                self.add_flow(datapath, 1, match, actions, msg.buffer_id)
-                return
-            else:
-                self.add_flow(datapath, 1, match, actions)
+        match = parser.OFPMatch(in_port=in_port, eth_type=0x0800, ip_proto=proto)
+        
+        if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+            self.add_flow(datapath, 1, match, actions, msg.buffer_id)
+            return
+        else:
+            self.add_flow(datapath, 1, match, actions)
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
