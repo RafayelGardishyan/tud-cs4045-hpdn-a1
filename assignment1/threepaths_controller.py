@@ -56,7 +56,13 @@ class ThreePathsController(app_manager.RyuApp):
         ipv4_pkt = pkt.get_protocols(ipv4.ipv4)
 
         if not ipv4_pkt:
-            out_port = ofproto.OFPP_FLOOD
+            if in_port == 1:
+                out_port = 2
+            elif in_port == 2:
+                out_port = 1
+            else:
+                return
+
             actions = [parser.OFPActionOutput(out_port)]
             data = None
             if msg.buffer_id == ofproto.OFP_NO_BUFFER:
