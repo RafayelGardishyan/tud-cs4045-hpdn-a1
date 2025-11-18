@@ -91,16 +91,12 @@ class ThreePathsController(app_manager.RyuApp):
         match = None
         if in_port != 1:
             out_port = 1
-            print("Sending packet to its destination")
         elif proto == 6:
             out_port = 2
-            print("Sending TCP Packet to port 2")
         elif proto == 17:
             out_port = 3
-            print("Sending UDP Packet to port 3")
         elif proto == 1:
             out_port = 4
-            print("Sending ICMP Packet to port 4")
 
         actions = [parser.OFPActionOutput(out_port)]
 
