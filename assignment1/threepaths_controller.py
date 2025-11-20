@@ -69,9 +69,9 @@ class ThreePathsController(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
 
-        dpid = format(datapath.id, "d").zfill(16)
+        dpid = format(datapath.id, "d")
 
-        self.logger.info(f"Packet came in at switch_{dpid} from port {in_port}\n    (source: {src}; destination: {dst})")
+        self.logger.info(f"Packet came in at switch_{dpid} from port {in_port}\n  (source: {src}; destination: {dst})")
 
         out_port = -1
         
@@ -93,13 +93,13 @@ class ThreePathsController(app_manager.RyuApp):
                     # Unknown, just using path 2
                     self.logger.info("    > It is an unknown IPv4 protocol")
                     out_port = 2
+                
+                self.logger.info(f"        > We decided to forward packets like this to port {out_port}")
             else:
-                self.logger.info("    > It is not a IPv4 protocol packet")
+                self.logger.info("    > It is not a IPv4 protocol packet - Default port is 2")
                 out_port = 2
 
         actions = [parser.OFPActionOutput(out_port)]
-
-        self.logger.info(f"        > We decided to forward packets like this to port {out_port}")
 
         if out_port != -1:
             if ipv4_pkt and in_port == 1:
