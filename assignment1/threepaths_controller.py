@@ -107,10 +107,13 @@ class SimpleSwitch13(app_manager.RyuApp):
 
             if proto == 6:
                 out_port = 2
+                self.logger.info("TCP packet")
             if proto == 17:
                 out_port = 3
+                self.logger.info("UDP packet")
             if proto == 1:
                 out_port = 4
+                self.logger.info("ICMP packet")
 
         actions = [parser.OFPActionOutput(out_port)]
 
