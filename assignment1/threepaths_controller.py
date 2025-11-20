@@ -62,24 +62,6 @@ class ThreePathsController(app_manager.RyuApp):
 
         ipv4_pkt = pkt.get_protocols(ipv4.ipv4)
 
-        if not ipv4_pkt:
-            if in_port == 1:
-                out_port = 2
-            elif in_port == 2:
-                out_port = 1
-            else:
-                return
-
-            actions = [parser.OFPActionOutput(out_port)]
-            data = None
-            if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-                data = msg.data
-            
-            out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-                                      in_port=in_port, actions=actions, data=data)
-            datapath.send_msg(out)
-            return
-
         ipv4_header = ipv4_pkt[0] 
         proto = ipv4_header.proto
 
@@ -94,27 +76,49 @@ class ThreePathsController(app_manager.RyuApp):
 
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
-        out_port = ofproto.OFPP_FLOOD
-        match = None
+        out_port = ofproto.OFPP_NONE
+        
         if in_port != 1:
             out_port = 1
-        elif proto == 6:
-            out_port = 2
-        elif proto == 17:
-            out_port = 3
-        elif proto == 1:
-            out_port = 4
+        else:
+            if ipv4_pkt:
+                proto = ipv4_pkt[0].proto
+                if proto == 6:
+                    self.logger.info("TCP packet")
+                    out_port = 2
+                elif proto == 17:
+                    self.logger.info("UDP packet")
+                    out_port = 3
+                elif proto == 1:
+                    self.logger.info("ICMP packet")
+                    out_port = 4
+                else:
+                    # Unknown, just using path 2
+                    self.logger.info("Unknown IPv4 proto")
+                    out_port = 2
+            else:
+                self.logger.info("Non-IPv4 proto")
+                out_port = 2
 
         actions = [parser.OFPActionOutput(out_port)]
 
-        match = parser.OFPMatch(in_port=in_port, eth_type=0x0800, ip_proto=proto)
-        
-        if out_port != ofproto.OFPP_FLOOD:
-            if ipv4_pkt:
-                match = parser.OFPMatch(in_port=in_port, eth_type=0x0800, ip_proto=ipv4_header.proto)
+        if out_port != ofproto.OFPP_NONE:
+            if ipv4_pkt and in_port == 1:
+                match = parser.OFPMatch(
+                    in_port=in_port,
+                    eth_type=0x0800,
+                    ip_proto=ipv4_pkt[0].proto,
+                    eth_dst=dst
+                )
+            elif in_port == 1:
+                match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
             else:
-                match = parser.OFPMatch(in_port=in_port, eth_dst=dst, eth_src=src)
-                
+                match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
+
+        if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+            self.add_flow(datapath, 1, match, actions, msg.buffer_id)
+            return
+        else:
             self.add_flow(datapath, 1, match, actions)
 
         data = None
