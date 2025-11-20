@@ -40,8 +40,15 @@ class ThreePathsController(app_manager.RyuApp):
         else:
             mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     match=match, instructions=inst)
-        
-        datapath.send_msg(mod)
+            
+        self.logger.info(
+            "++ Installing flow | dp=%016x priority=%d buffer_id=%s match=%s actions=%s",
+            datapath.id,
+            priority,
+            str(buffer_id),
+            match,
+            actions,
+        )
         
         datapath.send_msg(mod)
 
