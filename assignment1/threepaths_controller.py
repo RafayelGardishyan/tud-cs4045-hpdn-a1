@@ -73,7 +73,7 @@ class ThreePathsController(app_manager.RyuApp):
 
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
-        out_port = ofproto.OFPP_NONE
+        out_port = -1
         
         if in_port != 1:
             out_port = 1
@@ -99,7 +99,7 @@ class ThreePathsController(app_manager.RyuApp):
 
         actions = [parser.OFPActionOutput(out_port)]
 
-        if out_port != ofproto.OFPP_NONE:
+        if out_port != -1:
             if ipv4_pkt and in_port == 1:
                 match = parser.OFPMatch(
                     in_port=in_port,
