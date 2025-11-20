@@ -62,9 +62,6 @@ class ThreePathsController(app_manager.RyuApp):
 
         ipv4_pkt = pkt.get_protocols(ipv4.ipv4)
 
-        ipv4_header = ipv4_pkt[0] 
-        proto = ipv4_header.proto
-
         if eth.ethertype == ether_types.ETH_TYPE_LLDP:
             # ignore lldp packet
             return
