@@ -71,7 +71,7 @@ class ThreePathsController(app_manager.RyuApp):
 
         dpid = format(datapath.id, "d").zfill(16)
 
-        self.logger_info(f"Packet came in from port {in_port}")
+        self.logger.info(f"Packet came in from port {in_port}")
 
         out_port = -1
         
