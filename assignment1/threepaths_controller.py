@@ -71,7 +71,7 @@ class ThreePathsController(app_manager.RyuApp):
 
         dpid = format(datapath.id, "d").zfill(16)
 
-        self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
+        self.logger_info(f"Packet came in from port {in_port}")
 
         out_port = -1
         
@@ -81,23 +81,25 @@ class ThreePathsController(app_manager.RyuApp):
             if ipv4_pkt:
                 proto = ipv4_pkt[0].proto
                 if proto == 6:
-                    self.logger.info("TCP packet")
+                    self.logger.info("It is a TCP packet")
                     out_port = 2
                 elif proto == 17:
-                    self.logger.info("UDP packet")
+                    self.logger.info("It is a UDP packet")
                     out_port = 3
                 elif proto == 1:
-                    self.logger.info("ICMP packet")
+                    self.logger.info("It is an ICMP packet")
                     out_port = 4
                 else:
                     # Unknown, just using path 2
-                    self.logger.info("Unknown IPv4 proto")
+                    self.logger.info("It is an unknown IPv4 protocol")
                     out_port = 2
             else:
-                self.logger.info("Non-IPv4 proto")
+                self.logger.info("It is not a IPv4 protocol packet")
                 out_port = 2
 
         actions = [parser.OFPActionOutput(out_port)]
+
+        self.logger.info(f"We decided to forward packets like this to port {out_port}")
 
         if out_port != -1:
             if ipv4_pkt and in_port == 1:
@@ -117,6 +119,8 @@ class ThreePathsController(app_manager.RyuApp):
             return
         else:
             self.add_flow(datapath, 1, match, actions)
+
+        self.logger.info("Installed flow! Yippieee")
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
