@@ -99,21 +99,21 @@ class SimpleSwitch13(app_manager.RyuApp):
         else:
             out_port = ofproto.OFPP_FLOOD
 
-        if eth.ethertype == ether_types.ETH_TYPE_IP and in_port == 1:
-            ipv4_pkt = pkt.get_protocols(ipv4.ipv4)[0]
+        # if eth.ethertype == ether_types.ETH_TYPE_IP and in_port == 1:
+        #     ipv4_pkt = pkt.get_protocols(ipv4.ipv4)[0]
 
-            ipv4_header = ipv4_pkt[0] 
-            proto = ipv4_header.proto
+        #     ipv4_header = ipv4_pkt[0] 
+        #     proto = ipv4_header.proto
 
-            if proto == 6:
-                out_port = 2
-                self.logger.info("TCP packet")
-            if proto == 17:
-                out_port = 3
-                self.logger.info("UDP packet")
-            if proto == 1:
-                out_port = 4
-                self.logger.info("ICMP packet")
+        #     if proto == 6:
+        #         out_port = 2
+        #         self.logger.info("TCP packet")
+        #     if proto == 17:
+        #         out_port = 3
+        #         self.logger.info("UDP packet")
+        #     if proto == 1:
+        #         out_port = 4
+        #         self.logger.info("ICMP packet")
 
         actions = [parser.OFPActionOutput(out_port)]
 
