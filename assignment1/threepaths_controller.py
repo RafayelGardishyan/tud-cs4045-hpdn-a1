@@ -1,3 +1,10 @@
+###### HDPN Assignment 1.5 ######
+#                               #
+#   Author: Rafayel Gardishyan  #
+#   Student nr.: 5686547        #
+#                               #
+#################################
+
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
@@ -9,6 +16,23 @@ from ryu.lib.packet import ether_types
 from ryu.lib.packet import ipv4
 
 class ThreePathsController(app_manager.RyuApp):
+    """ Skeleton taken from ryu/app/simple_switch_13.py
+    Adapted to handle the following network:
+        
+                /--- TCP / Unknown ---\
+        h1 --- s1 ------- UDP ------- s2 --- h2
+                \-------- ICMP -------/
+
+    All TCP traffic takes Path 1 (port 2)
+    All UDP traffic takes Path 2 (port 3)
+    All ICMP traffic takes Path 3 (port 4)
+    All other traffic takes Path 1 (port 2) - Everything that is not IPv4 or is a different protocol than the abovementioned
+
+    Main logic for this routing to be found in `_packet_in_handler`
+
+    Note: No flows are installed for the traffic in the "other" category - this is to make the flow_dump more readable
+    """
+    
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
     def __init__(self, *args, **kwargs):
@@ -40,15 +64,6 @@ class ThreePathsController(app_manager.RyuApp):
         else:
             mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                     match=match, instructions=inst)
-            
-        self.logger.info(
-            "++ Installing flow | dp=%016x priority=%d buffer_id=%s match=%s actions=%s",
-            datapath.id,
-            priority,
-            str(buffer_id),
-            match,
-            actions,
-        )
         
         datapath.send_msg(mod)
 
@@ -80,6 +95,9 @@ class ThreePathsController(app_manager.RyuApp):
 
         self.logger.info(f"Packet came in at switch_{dpid} from port {in_port}\n  (source: {src}; destination: {dst})")
 
+
+        ### MAIN ASSIGNMENT LOGIC ###
+        
         out_port = -1
         
         if in_port != 1:
@@ -97,7 +115,7 @@ class ThreePathsController(app_manager.RyuApp):
                     self.logger.info("    > It is an ICMP packet")
                     out_port = 4
                 else:
-                    # Unknown, just using path 2
+                    # Other traffic, just using path 2
                     self.logger.info("    > It is an unknown IPv4 protocol")
                     out_port = 2
                 
@@ -124,13 +142,8 @@ class ThreePathsController(app_manager.RyuApp):
                     self.add_flow(datapath, 1, match, actions)
 
                 self.logger.info("        > Installed flow! Yippieee")
-           
-                    # elif in_port == 1:
-            #     match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-            # else:
-            #     match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-
         
+        ### END MAIN ASSIGNMENT LOGIC ###
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
