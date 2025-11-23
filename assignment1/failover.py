@@ -100,8 +100,6 @@ class ThreePathsController(app_manager.RyuApp):
         src = eth.src
 
         dpid = format(datapath.id, "d")
-
-        self.logger.info(f"Packet came in at switch_{dpid} from port {in_port}\n  (source: {src}; destination: {dst})")
         
         out_port = -1
         
@@ -111,22 +109,16 @@ class ThreePathsController(app_manager.RyuApp):
             if ipv4_pkt:
                 proto = ipv4_pkt[0].proto
                 if proto == 6:
-                    self.logger.info("    > It is a TCP packet")
                     out_port = 2
                 elif proto == 17:
-                    self.logger.info("    > It is a UDP packet")
                     out_port = 3
                 elif proto == 1:
-                    self.logger.info("    > It is an ICMP packet")
                     out_port = 4
                 else:
                     # Other traffic, just using path 2
-                    self.logger.info("    > It is an unknown IPv4 protocol")
                     out_port = 2
                 
-                self.logger.info(f"        > We decided to forward packets like this to port {out_port}")
             else:
-                self.logger.info("    > It is not a IPv4 protocol packet - Default port is 2")
                 out_port = 2
 
         actions = [parser.OFPActionOutput(out_port)]
@@ -146,7 +138,6 @@ class ThreePathsController(app_manager.RyuApp):
                 else:
                     self.add_flow(datapath, 1, match, actions)
 
-                self.logger.info("        > Installed flow! Yippieee")
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
@@ -187,7 +178,7 @@ class ThreePathsController(app_manager.RyuApp):
             bw *= 8
             bw /= 1000000
 
-            print(f"bandwidth = {bw} Mbps")
+            self.logger.info(f"bandwidth = {bw} Mbps")
 
             self.last_byte_count = stat.byte_count
 
