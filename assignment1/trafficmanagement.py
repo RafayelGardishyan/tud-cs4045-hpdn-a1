@@ -145,7 +145,7 @@ class ThreePathsController(app_manager.RyuApp):
                 # We install flows for all trafic flowing to host
                 match = parser.OFPMatch(
                     in_port=in_port,
-                    eth_type=0x0800,
+                    eth_type=eth,
                     eth_dst=dst
                     )
                 
