@@ -39,7 +39,7 @@ class ThreePathsController(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(ThreePathsController, self).__init__(*args, **kwargs)
 
-        ### SOME ASSIGNMENT RELATED INITIALISATION ###
+        ### SOME ASSIGNMENT 1.6 RELATED INITIALISATION ###
         self.switch_datapath = None
         self.last_byte_count = 0
         hub.spawn(self.monitor)
@@ -50,13 +50,33 @@ class ThreePathsController(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        if self.switch_datapath is None:
+        if datapath.id == 1 and self.switch_datapath is None:
             self.switch_datapath = datapath
 
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
+
+        ### MAIN ASSIGNMENT 1.6B RELATED SETUP/LOGIC ###
+        actions_normal = [parser.OFPActionOutput(3)]
+        actions_failover = [parser.OFPActionOutput(2)]
+
+        buckets = [
+            parser.OFPBucket(watch_port=3, actions=actions_normal),
+            parser.OFPBucket(watch_port=2, actions=actions_failover)
+        ]
+
+        req = parser.OFPGroupMod(
+            datapath=datapath,
+            command=ofproto.OFPGC_ADD,
+            type_=ofproto.OFPGT_FF,
+            group_id=1,
+            buckets=buckets
+        )
+
+        datapath.send_msg(req)
+        ### END MAIN ASSIGNMENT 1.6B RELATED SETUP/LOGIC ###
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
@@ -97,11 +117,11 @@ class ThreePathsController(app_manager.RyuApp):
             return
         
         dst = eth.dst
-        src = eth.src
-
-        dpid = format(datapath.id, "d")
         
         out_port = -1
+
+        ### ASSIGNMENT 1.6B RELATED CHANGES ###
+        actions = []
         
         if in_port != 1:
             out_port = 1
@@ -110,18 +130,23 @@ class ThreePathsController(app_manager.RyuApp):
                 proto = ipv4_pkt[0].proto
                 if proto == 6:
                     out_port = 2
+                    actions = [parser.OFPActionOutput(out_port)]
                 elif proto == 17:
                     out_port = 3
+                    actions = [parser.OFPActionGroup(group_id=1)]
                 elif proto == 1:
                     out_port = 4
+                    actions = [parser.OFPActionOutput(out_port)]
                 else:
                     # Other traffic, just using path 2
                     out_port = 2
+                    actions = [parser.OFPActionOutput(out_port)]
                 
             else:
                 out_port = 2
-
-        actions = [parser.OFPActionOutput(out_port)]
+                actions = [parser.OFPActionOutput(out_port)]
+            
+        ### ASSIGNMENT 1.6B RELATED CHANGES ###
 
         if out_port != -1:
             if ipv4_pkt and in_port == 1:
@@ -138,6 +163,19 @@ class ThreePathsController(app_manager.RyuApp):
                 else:
                     self.add_flow(datapath, 1, match, actions)
 
+            if out_port == 1:
+                # We install flows for all trafic flowing to host
+                match = parser.OFPMatch(
+                    in_port=in_port,
+                    eth_type=0x0800,
+                    eth_dst=dst
+                    )
+                
+                if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+                    self.add_flow(datapath, 1, match, actions, msg.buffer_id)
+                    return
+                else:
+                    self.add_flow(datapath, 1, match, actions)
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
