@@ -161,6 +161,8 @@ class ThreePathsController(app_manager.RyuApp):
     def monitor(self):
         while True:
             hub.sleep(1)
+            if self.switch_datapath is None:
+                continue
             ofp = self.switch_datapath.ofproto
             ofp_parser = self.switch_datapath.ofproto_parser
 
