@@ -141,6 +141,19 @@ class ThreePathsController(app_manager.RyuApp):
                     self.add_flow(datapath, 1, match, actions)
 
                 self.logger.info("        > Installed flow! Yippieee")
+            if out_port == 1:
+                # We install flows for all trafic flowing to host
+                match = parser.OFPMatch(
+                    in_port=in_port,
+                    eth_type=0x0800,
+                    eth_dst=dst
+                    )
+                
+                if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+                    self.add_flow(datapath, 1, match, actions, msg.buffer_id)
+                    return
+                else:
+                    self.add_flow(datapath, 1, match, actions)
         
         ### END MAIN ASSIGNMENT LOGIC ###
 

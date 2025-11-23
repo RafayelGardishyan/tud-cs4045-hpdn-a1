@@ -147,7 +147,7 @@ class ThreePathsController(app_manager.RyuApp):
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
-    ### MAIN ASSIGNMENT LOGIC ###
+    ### MAIN ASSIGNMENT 1.6A LOGIC ###
 
     def monitor(self):
         while True:
@@ -182,4 +182,4 @@ class ThreePathsController(app_manager.RyuApp):
 
             self.last_byte_count = stat.byte_count
 
-    ### END MAIN ASSIGNMENT LOGIC ###
+    ### END MAIN ASSIGNMENT 1.6A LOGIC ###
