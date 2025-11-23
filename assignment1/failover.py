@@ -1,4 +1,4 @@
-###### HDPN Assignment 1.5 ######
+###### HDPN Assignment 1.6 ######
 #                               #
 #   Author: Rafayel Gardishyan  #
 #   Student nr.: 5686547        #
@@ -14,6 +14,7 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
 from ryu.lib.packet import ipv4
+from ryu.lib import hub
 
 class ThreePathsController(app_manager.RyuApp):
     """ Skeleton taken from ryu/app/simple_switch_13.py
@@ -37,13 +38,20 @@ class ThreePathsController(app_manager.RyuApp):
 
     def __init__(self, *args, **kwargs):
         super(ThreePathsController, self).__init__(*args, **kwargs)
-        self.mac_to_prt = {}
+
+        ### SOME ASSIGNMENT RELATED INITIALISATION ###
+        self.switch_datapath = None
+        self.last_byte_count = 0
+        hub.spawn(self.monitor)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
+
+        if self.switch_datapath is None:
+            self.switch_datapath = datapath
 
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
@@ -94,9 +102,6 @@ class ThreePathsController(app_manager.RyuApp):
         dpid = format(datapath.id, "d")
 
         self.logger.info(f"Packet came in at switch_{dpid} from port {in_port}\n  (source: {src}; destination: {dst})")
-
-
-        ### MAIN ASSIGNMENT LOGIC ###
         
         out_port = -1
         
@@ -142,8 +147,6 @@ class ThreePathsController(app_manager.RyuApp):
                     self.add_flow(datapath, 1, match, actions)
 
                 self.logger.info("        > Installed flow! Yippieee")
-        
-        ### END MAIN ASSIGNMENT LOGIC ###
 
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
@@ -152,3 +155,38 @@ class ThreePathsController(app_manager.RyuApp):
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
+
+    ### MAIN ASSIGNMENT LOGIC ###
+
+    def monitor(self):
+        while True:
+            hub.sleep(1)
+            ofp = self.switch_datapath.ofproto
+            ofp_parser = self.switch_datapath.ofproto_parser
+
+            cookie = cookie_mask = 0
+            match = ofp_parser.OFPMatch(eth_type=0x0800)
+            req = ofp_parser.OFPFlowStatsRequest(self.switch_datapath, 0,
+                                                ofp.OFPTT_ALL,
+                                                ofp.OFPP_ANY, ofp.OFPG_ANY,
+                                                cookie, cookie_mask,
+                                                match)
+            self.switch_datapath.send_msg(req)
+
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def stats_handler(self, ev):
+        body = ev.msg.body
+
+        for stat in body:
+            if stat.match.get('ip_proto') != 6:
+                continue
+
+            bw = stat.byte_count - self.last_byte_count
+            bw *= 8
+            bw /= 1000000
+
+            print(f"bandwidth = {bw} Mbps")
+
+            self.last_byte_count = stat.byte_count
+
+    ### END MAIN ASSIGNMENT LOGIC ###
