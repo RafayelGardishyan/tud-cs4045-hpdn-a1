@@ -39,7 +39,7 @@ class ThreePathsController(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(ThreePathsController, self).__init__(*args, **kwargs)
 
-        ### SOME ASSIGNMENT 1.6 RELATED INITIALISATION ###
+        ### SOME ASSIGNMENT 1.6.1 RELATED INITIALISATION ###
         self.switch_datapath = None
         self.last_byte_count = 0
         hub.spawn(self.monitor)
@@ -58,7 +58,7 @@ class ThreePathsController(app_manager.RyuApp):
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
 
-        ### MAIN ASSIGNMENT 1.6B RELATED SETUP/LOGIC ###
+        ### MAIN ASSIGNMENT 1.6.2 RELATED SETUP/LOGIC ###
         actions_normal = [parser.OFPActionOutput(3)]
         actions_failover = [parser.OFPActionOutput(2)]
 
@@ -76,7 +76,7 @@ class ThreePathsController(app_manager.RyuApp):
         )
 
         datapath.send_msg(req)
-        ### END MAIN ASSIGNMENT 1.6B RELATED SETUP/LOGIC ###
+        ### END MAIN ASSIGNMENT 1.6.2 RELATED SETUP/LOGIC ###
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
@@ -120,7 +120,7 @@ class ThreePathsController(app_manager.RyuApp):
         
         out_port = -1
 
-        ### ASSIGNMENT 1.6B RELATED CHANGES ###
+        ### ASSIGNMENT 1.6.2 RELATED CHANGES ###
         actions = []
         
         if in_port != 1:
@@ -146,7 +146,7 @@ class ThreePathsController(app_manager.RyuApp):
                 out_port = 2
                 actions = [parser.OFPActionOutput(out_port)]
             
-        ### ASSIGNMENT 1.6B RELATED CHANGES ###
+        ### ASSIGNMENT 1.6.2 RELATED CHANGES ###
 
         if out_port != -1:
             if ipv4_pkt and in_port == 1:
@@ -185,7 +185,7 @@ class ThreePathsController(app_manager.RyuApp):
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
-    ### MAIN ASSIGNMENT 1.6A LOGIC ###
+    ### MAIN ASSIGNMENT 1.6.1 LOGIC ###
 
     def monitor(self):
         while True:
@@ -220,4 +220,4 @@ class ThreePathsController(app_manager.RyuApp):
 
             self.last_byte_count = stat.byte_count
 
-    ### END MAIN ASSIGNMENT 1.6A LOGIC ###
+    ### END MAIN ASSIGNMENT 1.6.1 LOGIC ###
