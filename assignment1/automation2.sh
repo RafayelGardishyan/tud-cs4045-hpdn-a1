@@ -22,7 +22,7 @@ sh sleep 10
 # If your UDP path goes through an intermediate switch (e.g., s1-s3-s2),
 # change this to 'link s1 s3 down'.
 sh echo "--- BREAKING UDP LINK NOW ---"
-link s1 s2 down
+s1 ifconfig s1-eth3 down
 
 # 6. Wait to observe failover
 sh echo "--- Link broken. Observing bandwidth/failover for 10s... ---"
