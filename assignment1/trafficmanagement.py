@@ -154,6 +154,9 @@ class ThreePathsController(app_manager.RyuApp):
                     return
                 else:
                     self.add_flow(datapath, 1, match, actions)
+
+                self.logger.info("        > Installed flow to destination (non-assignment-spec routing)!")
+
         
         ### END MAIN ASSIGNMENT LOGIC ###
 
