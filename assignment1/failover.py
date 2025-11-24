@@ -211,16 +211,25 @@ class ThreePathsController(app_manager.RyuApp):
     def stats_handler(self, ev):
         body = ev.msg.body
 
+        current_total = 0
+
         for stat in body:
             if stat.match.get('ip_proto') != 6:
                 continue
+            
+            current_total += stat.byte_count
 
-            bw = stat.byte_count - self.last_byte_count
-            bw *= 8
-            bw /= 1000000
+        if self.last_byte_count == 0:
+            self.last_byte_count = current_total_tcp_bytes
+            return
+        
 
-            self.logger.info(f"bandwidth = {bw} Mbps")
+        bw = stat.byte_count - self.last_byte_count
+        bw *= 8
+        bw /= 1000000
 
-            self.last_byte_count = stat.byte_count
+        self.logger.info(f"bandwidth = {bw} Mbps")
 
+        self.last_byte_count = current_total
+        
     ### END MAIN ASSIGNMENT 1.6.1 LOGIC ###
