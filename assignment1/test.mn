@@ -1,0 +1,14 @@
+h2 iperf -s &
+h2 iperf -su &
+
+h1 ping h2 -i 0.5 &
+
+h1 iperf -c h2 -t 60 &
+h1 iperf -c h2 -u -b 5m -t 60 &
+
+sh sleep 10
+
+s1 ifconfig s1-eth3 down
+
+
+sh sleep 20
