@@ -133,6 +133,7 @@ class ThreePathsController(app_manager.RyuApp):
                     out_port = 2
                 elif proto == 17:
                     out_port = 3
+                    failover_group = True
                 elif proto == 1:
                     out_port = 4
                 else:
