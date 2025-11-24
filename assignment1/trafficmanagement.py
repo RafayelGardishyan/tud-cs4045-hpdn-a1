@@ -142,7 +142,7 @@ class ThreePathsController(app_manager.RyuApp):
 
                 self.logger.info("        > Installed flow! Yippieee")
             if out_port == 1:
-                # We install flows for all trafic flowing to host
+                # Install flows for all trafic flowing to host
                 match = parser.OFPMatch(
                     in_port=in_port,
                     eth_type=eth.ethertype,

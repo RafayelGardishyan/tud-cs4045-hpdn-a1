@@ -50,6 +50,7 @@ class ThreePathsController(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
+        ### ASSIGNMENT 1.6.1 RELATED SETUP/LOGIC ###
         if datapath.id == 1 and self.switch_datapath is None:
             self.switch_datapath = datapath
 
@@ -121,7 +122,7 @@ class ThreePathsController(app_manager.RyuApp):
         out_port = -1
 
         ### ASSIGNMENT 1.6.2 RELATED CHANGES ###
-        actions = []
+        failover_group = False
         
         if in_port != 1:
             out_port = 1
@@ -130,23 +131,25 @@ class ThreePathsController(app_manager.RyuApp):
                 proto = ipv4_pkt[0].proto
                 if proto == 6:
                     out_port = 2
-                    actions = [parser.OFPActionOutput(out_port)]
                 elif proto == 17:
                     out_port = 3
-                    actions = [parser.OFPActionGroup(group_id=1)]
                 elif proto == 1:
                     out_port = 4
-                    actions = [parser.OFPActionOutput(out_port)]
                 else:
                     # Other traffic, just using path 2
                     out_port = 2
-                    actions = [parser.OFPActionOutput(out_port)]
-                
+
             else:
                 out_port = 2
                 actions = [parser.OFPActionOutput(out_port)]
+
+        if failover_group:
+            actions = [parser.OFPActionGroup(group_id=1)]
+        else:
+            actions = [parser.OFPActionOutput(out_port)]
+
             
-        ### ASSIGNMENT 1.6.2 RELATED CHANGES ###
+        ### END ASSIGNMENT 1.6.2 RELATED CHANGES ###
 
         if out_port != -1:
             if ipv4_pkt and in_port == 1:
@@ -164,10 +167,10 @@ class ThreePathsController(app_manager.RyuApp):
                     self.add_flow(datapath, 1, match, actions)
 
             if out_port == 1:
-                # We install flows for all trafic flowing to host
+                # Install flows for all trafic flowing to host
                 match = parser.OFPMatch(
                     in_port=in_port,
-                    eth_type=0x0800,
+                    eth_type=eth.ethertype,
                     eth_dst=dst
                     )
                 
