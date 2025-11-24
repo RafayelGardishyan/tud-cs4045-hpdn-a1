@@ -218,6 +218,11 @@ class ThreePathsController(app_manager.RyuApp):
             
             current_total += stat.byte_count
 
+        if self.last_byte_count == 0:
+            self.last_byte_count = current_total
+            return
+        
+
         bw = current_total - self.last_byte_count
         bw *= 8
         bw /= 1000000
