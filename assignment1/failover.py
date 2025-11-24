@@ -200,12 +200,10 @@ class ThreePathsController(app_manager.RyuApp):
             ofp_parser = self.switch_datapath.ofproto_parser
 
             cookie = cookie_mask = 0
-            match = ofp_parser.OFPMatch(eth_type=0x0800)
             req = ofp_parser.OFPFlowStatsRequest(self.switch_datapath, 0,
                                                 ofp.OFPTT_ALL,
                                                 ofp.OFPP_ANY, ofp.OFPG_ANY,
-                                                cookie, cookie_mask,
-                                                match)
+                                                cookie, cookie_mask)
             self.switch_datapath.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
@@ -219,11 +217,6 @@ class ThreePathsController(app_manager.RyuApp):
                 continue
             
             current_total += stat.byte_count
-
-        if self.last_byte_count == 0:
-            self.last_byte_count = current_total
-            return
-        
 
         bw = current_total - self.last_byte_count
         bw *= 8
