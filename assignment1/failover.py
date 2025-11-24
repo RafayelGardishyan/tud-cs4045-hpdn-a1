@@ -220,7 +220,7 @@ class ThreePathsController(app_manager.RyuApp):
             current_total += stat.byte_count
 
         if self.last_byte_count == 0:
-            self.last_byte_count = current_total_tcp_bytes
+            self.last_byte_count = current_total
             return
         
 
@@ -231,5 +231,5 @@ class ThreePathsController(app_manager.RyuApp):
         self.logger.info(f"bandwidth = {bw} Mbps")
 
         self.last_byte_count = current_total
-        
+
     ### END MAIN ASSIGNMENT 1.6.1 LOGIC ###
