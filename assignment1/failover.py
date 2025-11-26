@@ -32,6 +32,10 @@ class ThreePathsController(app_manager.RyuApp):
     Main logic for this routing to be found in `_packet_in_handler`
 
     Note: No flows are installed for the traffic in the "other" category - this is to make the flow_dump more readable
+
+    Extra features:
+      - TCP Bandwidth tracking (See section under in the file)
+      - UDP Failover: switch to TCP-path when UDP-path fails (Throughout the file)
     """
     
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
