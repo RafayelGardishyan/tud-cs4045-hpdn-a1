@@ -233,9 +233,9 @@ class ThreePathsController(app_manager.RyuApp):
 
         current_time = time.perf_counter()
 
-        delta_time = self.last_time - current_time
+        delta_time = current_time - self.last_time
 
-        bw *= delta_time
+        bw /= delta_time
 
 
 
