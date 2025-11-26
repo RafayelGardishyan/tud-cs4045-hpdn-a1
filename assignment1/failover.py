@@ -16,8 +16,6 @@ from ryu.lib.packet import ether_types
 from ryu.lib.packet import ipv4
 from ryu.lib import hub
 
-import time
-
 class ThreePathsController(app_manager.RyuApp):
     """ Skeleton taken from ryu/app/simple_switch_13.py
     Adapted to handle the following network:
@@ -44,7 +42,6 @@ class ThreePathsController(app_manager.RyuApp):
         ### SOME ASSIGNMENT 1.6.1 RELATED INITIALISATION ###
         self.switch_datapath = None
         self.last_byte_count = 0
-        self.last_time = -1
         hub.spawn(self.monitor)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
@@ -221,9 +218,8 @@ class ThreePathsController(app_manager.RyuApp):
             
             current_total += stat.byte_count
 
-        if self.last_byte_count == 0 or self.last_time == -1:
+        if self.last_byte_count == 0:
             self.last_byte_count = current_total
-            self.last_time = time.perf_counter()
             return
         
 
@@ -231,17 +227,8 @@ class ThreePathsController(app_manager.RyuApp):
         bw *= 8
         bw /= 1000000
 
-        current_time = time.perf_counter()
-
-        delta_time = current_time - self.last_time
-
-        bw /= delta_time
-
-
-
         self.logger.info(f"bandwidth = {bw} Mbps")
 
         self.last_byte_count = current_total
-        self.last_time = current_time
 
     ### END MAIN ASSIGNMENT 1.6.1 LOGIC ###
