@@ -59,13 +59,14 @@ parser MyParser(packet_in packet,
     state parse_ethernet{
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType){
-            // TODO add logic for state transition
+            0x0800: parse_ipv4;
             default: accept;
         }
     }
     
     state parse_ipv4{
-        // TODO add logic for ipv4 parsing
+        packet.extract(hdr.ipv4);
+        transition accept;
     }
 }
 
@@ -74,9 +75,20 @@ parser MyParser(packet_in packet,
 ************   C H E C K S U M    V E R I F I C A T I O N   *************
 *************************************************************************/
 
+
 control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
-    apply {  }
+    apply {
+        // verify_checksum(
+        //     hdr.ipv4.isValid(),
+        //     { hdr.ipv4.version, hdr.ipv4.ihl, hdr.ipv4.diffserv,
+        //       hdr.ipv4.totalLen, hdr.ipv4.identification,
+        //       hdr.ipv4.flags, hdr.ipv4.fragOffset, hdr.ipv4.ttl,
+        //       hdr.ipv4.protocol, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr },
+        //       hdr.ipv4.hdrChecksum,
+        //     HashAlgorithm.csum16);
+    }
 }
+
 
 
 /*************************************************************************
@@ -91,10 +103,32 @@ control MyIngress(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
 
-    // TODO add forwarding logic
+    action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
+        standard_metadata.egress_spec = port;
+
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+        hdr.ethernet.dstAddr = dstAddr;
+
+        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+    }
+
+    table ipv4_lpm {
+        key = {
+            hdr.ipv4.dstAddr: lpm;
+        }
+        actions = {
+            ipv4_forward;
+            drop;
+            NoAction;
+            }
+        size = 1024;
+        default_action = NoAction();
+    }
 
     apply {
-    
+        if (hdr.ipv4.isValid()) {
+            ipv4_lpm.apply();
+        }
     }
 }
 
@@ -139,7 +173,8 @@ control MyComputeChecksum(inout headers hdr, inout metadata meta) {
 
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
-    // TODO add deparser logic
+        packet.emit(hdr.ethernet);
+        packet.emit(hdr.ipv4);
     }
 }
 
