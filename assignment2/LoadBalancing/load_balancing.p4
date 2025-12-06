@@ -34,6 +34,13 @@ header ipv4_t {
     ip4Addr_t dstAddr;
 }
 
+header udp_t {
+    bit<16> srcPort;
+    bit<16> dstPort;
+    bit<16> totalLen;
+    bit<16> checksum;
+}
+
 struct metadata {
     bit<32> backend_index;
 }
@@ -41,6 +48,7 @@ struct metadata {
 struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
+    udp_t        udp;
 }
 
 /*************************************************************************
@@ -66,6 +74,14 @@ parser MyParser(packet_in packet,
     
     state parse_ipv4{
         packet.extract(hdr.ipv4);
+        transition select(hdr.ipv4.protocol){
+            0x11: parse_udp;
+            default: accept;
+        }
+    }
+
+    state parse_udp{
+        packet.extract(hdr.udp);
         transition accept;
     }
 }
@@ -121,8 +137,9 @@ control MyIngress(inout headers hdr,
         hdr.ethernet.dstAddr = dstAddr;
 
         hdr.ipv4.dstAddr = dstIP;
-
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+
+        hdr.udp.checksum = 0;
     }
 
     action choose_backend() {
@@ -224,6 +241,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
+        packet.emit(hdr.udp);
     }
 }
 
