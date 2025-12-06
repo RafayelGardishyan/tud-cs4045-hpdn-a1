@@ -114,6 +114,17 @@ control MyIngress(inout headers hdr,
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
+    action ipv4_forward_load_balance(macAddr_t dstAddr, ip4Addr_t dstIP, egressSpec_t port) {
+        standard_metadata.egress_spec = port;
+
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+        hdr.ethernet.dstAddr = dstAddr;
+
+        hdr.ipv4.dstAddr = dstIP;
+
+        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+    }
+
     action choose_backend() {
         bit<32> count;
         packet_count.read(count, 0);
@@ -151,7 +162,7 @@ control MyIngress(inout headers hdr,
             meta.backend_index: exact;
         }
         actions = {
-            ipv4_forward;
+            ipv4_forward_load_balance;
             NoAction;
         }
         size = 1024;
