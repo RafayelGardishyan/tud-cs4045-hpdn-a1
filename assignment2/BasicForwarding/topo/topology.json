@@ -67,16 +67,20 @@
     },
     "switches": {
         "s1": {
-            "cli_input": "topo/s1-runtime.txt"
+            "cli_input": "topo/s1-runtime.txt",
+            "program": "build/basic_forwarding.json"
         },
         "s2": {
-            "cli_input": "topo/s2-runtime.txt"
+            "cli_input": "topo/s2-runtime.txt",
+            "program": "build/basic_forwarding.json"
         },
         "s3": {
-            "cli_input": "topo/s3-runtime.txt"
+            "cli_input": "topo/s3-runtime.txt",
+            "program": "build/basic_forwarding.json"
         },
         "s4": {
-            "cli_input": "topo/s4-runtime.txt"
+            "cli_input": "topo/s4-runtime.txt",
+            "program": "build/basic_forwarding.json"
         }
     },
     "links": [

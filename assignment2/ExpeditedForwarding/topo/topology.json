@@ -67,21 +67,25 @@
     },
     "switches": {
         "s1": {
-            "cli_input": "topo/s1-runtime.txt"
+            "cli_input": "topo/s1-runtime.txt",
+            "program": "build/edge.json"
         },
         "s2": {
-            "cli_input": "topo/s2-runtime.txt"
+            "cli_input": "topo/s2-runtime.txt",
+            "program": "build/edge.json"
         },
         "s3": {
-            "cli_input": "topo/s3-runtime.txt"
+            "cli_input": "topo/s3-runtime.txt",
+            "program": "build/interior.json"
         },
         "s4": {
-            "cli_input": "topo/s4-runtime.txt"
+            "cli_input": "topo/s4-runtime.txt",
+            "program": "build/basic_forwarding.json"
         }
     },
     "links": [
-        ["h2", "s1-p2"],
         ["h1", "s1-p1"],
+        ["h2", "s1-p2"],
         ["h3", "s2-p1"],
         ["h4", "s2-p2"],
         ["h5", "s4-p1"],
