@@ -1,0 +1,99 @@
+{
+    "hosts": {
+        "h1": {
+            "ip": "10.0.1.1/24",
+            "mac": "08:00:00:00:01:11",
+            "commands": [
+                "route add default gw 10.0.1.10 dev eth0",
+                "arp -i eth0 -s 10.0.1.10 08:00:00:00:01:00"
+            ]
+        },
+        "h2": {
+            "ip": "10.0.2.1/24",
+            "mac": "08:00:00:00:02:11",
+            "commands": [
+                "route add default gw 10.0.2.10 dev eth0",
+                "arp -i eth0 -s 10.0.2.10 08:00:00:00:02:00"
+            ]
+        },
+        "h3": {
+            "ip": "10.0.3.1/24",
+            "mac": "08:00:00:00:03:11",
+            "commands": [
+                "route add default gw 10.0.3.10 dev eth0",
+                "arp -i eth0 -s 10.0.3.10 08:00:00:00:03:00"
+            ]
+        },
+        "h4": {
+            "ip": "10.0.4.1/24",
+            "mac": "08:00:00:00:04:11",
+            "commands": [
+                "route add default gw 10.0.4.10 dev eth0",
+                "arp -i eth0 -s 10.0.4.10 08:00:00:00:04:00"
+            ]
+        },
+        "h5": {
+            "ip": "10.0.5.1/24",
+            "mac": "08:00:00:00:05:11",
+            "commands": [
+                "route add default gw 10.0.5.10 dev eth0",
+                "arp -i eth0 -s 10.0.5.10 08:00:00:00:05:00"
+            ]
+        },
+        "h6": {
+            "ip": "10.0.6.1/24",
+            "mac": "08:00:00:00:06:11",
+            "commands": [
+                "route add default gw 10.0.6.10 dev eth0",
+                "arp -i eth0 -s 10.0.6.10 08:00:00:00:06:00"
+            ]
+        },
+        "h7": {
+            "ip": "10.0.7.1/24",
+            "mac": "08:00:00:00:07:11",
+            "commands": [
+                "route add default gw 10.0.7.10 dev eth0",
+                "arp -i eth0 -s 10.0.7.10 08:00:00:00:07:00"
+            ]
+        },
+        "h8": {
+            "ip": "10.0.8.1/24",
+            "mac": "08:00:00:00:08:11",
+            "commands": [
+                "route add default gw 10.0.8.10 dev eth0",
+                "arp -i eth0 -s 10.0.8.10 08:00:00:00:08:00"
+            ]
+        }
+    },
+    "switches": {
+        "s1": {
+            "cli_input": "topo/s1-runtime.txt",
+            "program": "build/basic_forwarding.json"
+        },
+        "s2": {
+            "cli_input": "topo/s2-runtime.txt",
+            "program": "build/basic_forwarding.json"
+        },
+        "s3": {
+            "cli_input": "topo/s3-runtime.txt",
+            "program": "build/basic_forwarding.json"
+        },
+        "s4": {
+            "cli_input": "topo/s4-runtime.txt",
+            "program": "build/load_balancing.json"
+        }
+    },
+    "links": [
+        ["h1", "s1-p1"],
+        ["h2", "s1-p2"],
+        ["h3", "s2-p1"],
+        ["h4", "s2-p2"],
+        ["h5", "s4-p1"],
+        ["h6", "s4-p2"],
+        ["h7", "s4-p3"],
+        ["h8", "s4-p4"],
+        ["s1-p3", "s3-p1"],
+        ["s2-p3", "s3-p2"],
+        ["s3-p3", "s4-p5", 0, 2]
+    ]
+}
